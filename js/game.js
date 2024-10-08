@@ -67,8 +67,8 @@ window.addEventListener('keydown', (e) => {
 
 function drawScore() {
     ctx.fillStyle = 'white'; // Color del texto
-    ctx.font = '20px MyFont'; // Fuente y tamaño del texto
-    ctx.fillText(`Score: ${score}`, 20, 60); // Dibuja la puntuación en la posición (20, 50)
+    ctx.font = '30px MyFont'; // Fuente y tamaño del texto
+    ctx.fillText(`Score: ${score}`, 20, 65); // Dibuja la puntuación en la posición (20, 50)
 }
 
 
