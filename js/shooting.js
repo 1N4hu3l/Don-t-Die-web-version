@@ -1,6 +1,6 @@
 const bullets = [];
-let lastShotTime = 0; // Tiempo del último disparo
-const shootCooldown = 250; // Tiempo de espera entre disparos (en milisegundos)
+let lastShotTime = 0;
+const shootCooldown = 250;
 
 class Bullet {
     constructor(x, y, angle) {
@@ -28,27 +28,38 @@ class Bullet {
     }
 }
 
-// Actualizar y dibujar balas
 function updateBullets() {
     bullets.forEach((bullet, index) => {
         bullet.update();
         bullet.draw();
-
-        // Eliminar la bala si sale de los límites
         if (bullet.outOfBounds()) {
             bullets.splice(index, 1);
         }
     });
 }
 
-// Escuchar el evento de disparo
+function checkBulletEnemyCollisions() {
+    bullets.forEach((bullet, bulletIndex) => {
+        enemies.forEach((enemy, enemyIndex) => {
+            if (enemy.checkBulletCollision(bullet)) {
+                enemy.receiveDamage(20);
+                bullets.splice(bulletIndex, 1);
+                if (!enemy.active) {
+                    enemies.splice(enemyIndex, 1);
+                    score += 50;
+                }
+            }
+        });
+    });
+}
+
 window.addEventListener('keydown', (e) => {
     if (e.code === 'Space') {
-        const currentTime = Date.now(); // Obtener el tiempo actual
+        const currentTime = Date.now();
         if (currentTime - lastShotTime >= shootCooldown) {
             const bullet = new Bullet(player.x, player.y, player.angle);
             bullets.push(bullet);
-            lastShotTime = currentTime; // Actualizar el tiempo del último disparo
+            lastShotTime = currentTime;
         }
     }
 });
