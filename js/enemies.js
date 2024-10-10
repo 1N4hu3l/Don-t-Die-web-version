@@ -8,7 +8,7 @@ class Enemy {
     constructor(x, y, health, damage, speed, color) {
         this.x = x;
         this.y = y;
-        this.health = 1; 
+        this.health = health; 
         this.damage = damage;
         this.speed = speed;
         this.size = 30;
@@ -120,7 +120,7 @@ class Meteorite extends Enemy {
         }
 
         // Constructor con nueva velocidad y dirección
-        super(x, y, 1, player.maxHealth, enemySpeed, 'gray');
+        super(x, y, 1, 50, enemySpeed, 'gray');
         this.speedX = speedX;
         this.speedY = speedY;
     }
@@ -133,9 +133,9 @@ class Meteorite extends Enemy {
 
 class Boss extends Enemy {
     constructor() {
-        super(canvas.width / 2, -50, 10, 30, 2, 'purple'); // Vida del Boss = 100
+        super(canvas.width / 2, -50, 50, 30, 2, 'purple'); // Vida del Boss = 50
         this.phase = 1;
-        this.shootCooldown = 2000;
+        this.shootCooldown = 500;  // Cooldown inicial de los disparos
         this.lastShotTime = 0;
     }
 
@@ -143,57 +143,60 @@ class Boss extends Enemy {
         const currentTime = Date.now();
 
         if (this.phase === 1) {
-            // Fase 1: El jefe se mueve hacia el jugador lentamente
+            // Fase 1: Movimiento hacia el jugador
             const angle = Math.atan2(player.y - this.y, player.x - this.x);
             this.x += this.speed * Math.cos(angle);
             this.y += this.speed * Math.sin(angle);
 
-            // Si el jefe llega cerca del jugador, pasa a la fase 2
-            if (this.health < 15) {
+            if (this.health <= 40) {
                 this.phase = 2;
             }
         } else if (this.phase === 2) {
-            // Fase 2: El jefe dispara balas hacia el jugador en intervalos
+            // Fase 2: Disparos aleatorios con velocidad normal de movimiento
             if (currentTime - this.lastShotTime >= this.shootCooldown) {
-                this.shoot();
+                this.shootRandomBullets();
                 this.lastShotTime = currentTime;
             }
 
-            // Si la salud baja a menos de 10, pasa a la fase 3
-            if (this.health < 10) {
+            if (this.health <= 30) {
                 this.phase = 3;
-                this.speed = 4; // Aumenta la velocidad en la última fase
+                this.speed = 1;  // Reducir la velocidad en la fase 3
+                this.shootCooldown = 500;  // Disparar más rápido en la fase 3
             }
         } else if (this.phase === 3) {
-            // Fase 3: Combina movimiento rápido y disparos
+            // Fase 3: Movimiento lento y disparos rápidos
             const angle = Math.atan2(player.y - this.y, player.x - this.x);
             this.x += this.speed * Math.cos(angle);
             this.y += this.speed * Math.sin(angle);
 
-            // Disparos más rápidos
+            // Disparar más rápido en la fase 3
             if (currentTime - this.lastShotTime >= this.shootCooldown / 2) {
-                this.shoot();
+                this.shootRandomBullets();
                 this.lastShotTime = currentTime;
             }
         }
     }
 
-    shoot() {
-        // Disparo de balas hacia el jugador
-        const bossBullet = new EnemyBullet(this.x, this.y, Math.atan2(player.y - this.y, player.x - this.x));
-        enemyBullets.push(bossBullet);
+    // Método para disparar balas en direcciones aleatorias
+    shootRandomBullets() {
+        const numBullets = 5; // Número de balas disparadas en cada ráfaga
+        for (let i = 0; i < numBullets; i++) {
+            const randomAngle = Math.random() * Math.PI * 2; // Ángulo aleatorio entre 0 y 2π
+            const bossBullet = new EnemyBullet(this.x, this.y, randomAngle);
+            enemyBullets.push(bossBullet);
+        }
     }
 
     receiveDamage(damage) {
-        this.health -= damage;  // Reducir la vida del enemigo (incluido el Boss)
+        this.health -= damage;
         if (this.health <= 0) {
-            this.active = false;  // El enemigo se desactiva al llegar su vida a 0
-            if (this instanceof Boss) {
-                bossActive = false; // Si el jefe muere, permitir que otros enemigos aparezcan
-            }
+            this.active = false;
+            bossActive = false; // Si el jefe muere, permitir que otros enemigos aparezcan
         }
     }
 }
+
+
 
 function spawnEnemies(currentScore) {
     const currentTime = Date.now();
