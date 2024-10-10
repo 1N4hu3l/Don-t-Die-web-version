@@ -89,10 +89,10 @@ function checkBulletEnemyCollisions() {
     bullets.forEach((bullet, bulletIndex) => {
         enemies.forEach((enemy, enemyIndex) => {
             if (enemy.checkBulletCollision(bullet)) {
-                enemy.receiveDamage(20);
-                bullets.splice(bulletIndex, 1);
+                enemy.receiveDamage(10);  // Cambié el daño de las balas del jugador a 10
+                bullets.splice(bulletIndex, 1);  // Eliminar la bala después de colisionar
                 if (!enemy.active) {
-                    enemies.splice(enemyIndex, 1);
+                    enemies.splice(enemyIndex, 1);  // Eliminar al enemigo si ha sido derrotado
                     score += 50;
                 }
             }

@@ -20,7 +20,7 @@ script.onload = function() {
 };
 document.head.appendChild(script);
 
-let score = 0;
+let score = 950;
 
 canvas.width = window.innerWidth;
 canvas.height = window.innerHeight;
@@ -146,17 +146,26 @@ function gameLoop() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     updatePlayer();
     updateBullets();
-    updateEnemyBullets(); // Actualizar balas de los enemigos
+    updateEnemyBullets();
     drawPlayer();
     drawHealthBar();
     drawScore();
-    spawnEnemies(score);
+
+    // Revisamos si el jefe está activo o no
+    if (!bossActive) {
+        spawnEnemies(score);  // Solo spawn de enemigos si no hay jefe
+    } else {
+        spawnMeteorites();  // Meteoritos siguen apareciendo con el jefe activo
+    }
+
     updateEnemies(ctx);
     checkCollisions();
     checkBulletEnemyCollisions();
-    checkEnemyBulletPlayerCollisions(); // Detectar coliciones de balas de enemigos con el jugador
+    checkEnemyBulletPlayerCollisions();
     requestAnimationFrame(gameLoop);
 }
+
+
 
 window.addEventListener('resize', () => {
     canvas.width = window.innerWidth;
