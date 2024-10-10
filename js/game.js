@@ -125,16 +125,22 @@ function checkCollisions() {
         const distY = player.y - enemy.y;
         const distance = Math.sqrt(distX * distX + distY * distY);
 
+        // Si la distancia entre el jugador y el enemigo es menor que la suma de sus tamaños, colisionan
         if (distance < player.size + enemy.size) {
+            // Reducir la salud del jugador según el daño del enemigo
             player.health -= enemy.damage;
             if (player.health < 0) player.health = 0;
 
-            if (enemy instanceof Kamikaze || enemy instanceof Meteorite) {
-                enemies.splice(index, 1);
-            }
+            // Reducir el score en 100 puntos (o la cantidad que prefieras) al colisionar
+            score -= 100;
+            if (score < 0) score = 0; // Evitar que el score sea negativo
+
+            // Eliminar al enemigo tras colisionar
+            enemies.splice(index, 1);
         }
     });
 }
+
 
 function gameLoop() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);

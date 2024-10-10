@@ -2,6 +2,7 @@ const enemies = [];
 let enemySpeed = 2;
 let spawnInterval = 1000;
 let lastSpawnTime = 0;
+let bossActive = false; // Controla si el jefe está activo
 
 class Enemy {
     constructor(x, y, health, damage, speed, color) {
@@ -30,7 +31,7 @@ class Enemy {
     }
 
     outOfBounds() {
-        return this.x < 0 || this.x > canvas.width || this.y < 0 || this.y > canvas.height;
+        return this.x < -50 || this.x > canvas.width + 50 || this.y < -50 || this.y > canvas.height + 50;
     }
 
     checkBulletCollision(bullet) {
@@ -86,53 +87,146 @@ class Gun extends Enemy {
 }
 
 class Meteorite extends Enemy {
-    constructor(x, y) {
-        // El meteorito mata al jugador de una (daño igual a la vida máxima del jugador)
+    constructor() {
+        // Determina desde qué lado de la pantalla aparecerá el meteorito
+        const side = Math.floor(Math.random() * 4); // 0: arriba, 1: derecha, 2: abajo, 3: izquierda
+        let x, y, speedX, speedY;
+
+        switch (side) {
+            case 0: // Aparece arriba
+                x = Math.random() * canvas.width;
+                y = -30; // fuera del canvas
+                speedX = (Math.random() - 0.5) * enemySpeed;
+                speedY = enemySpeed;
+                break;
+            case 1: // Aparece a la derecha
+                x = canvas.width + 30;
+                y = Math.random() * canvas.height;
+                speedX = -enemySpeed;
+                speedY = (Math.random() - 0.5) * enemySpeed;
+                break;
+            case 2: // Aparece abajo
+                x = Math.random() * canvas.width;
+                y = canvas.height + 30;
+                speedX = (Math.random() - 0.5) * enemySpeed;
+                speedY = -enemySpeed;
+                break;
+            case 3: // Aparece a la izquierda
+                x = -30;
+                y = Math.random() * canvas.height;
+                speedX = enemySpeed;
+                speedY = (Math.random() - 0.5) * enemySpeed;
+                break;
+        }
+
+        // Constructor con nueva velocidad y dirección
         super(x, y, 1, player.maxHealth, enemySpeed, 'gray');
+        this.speedX = speedX;
+        this.speedY = speedY;
     }
 
     update() {
-        this.y += this.speed;
+        this.x += this.speedX;
+        this.y += this.speedY;
     }
 }
 
 class Boss extends Enemy {
     constructor() {
-        super(canvas.width / 2, -50, 1, 30, 2, 'purple');
+        super(canvas.width / 2, -50, 20, 30, 2, 'purple'); // Más vida y daño
         this.phase = 1;
+        this.shootCooldown = 2000; // Tiempo entre disparos
+        this.lastShotTime = 0;
     }
 
     update() {
+        const currentTime = Date.now();
+
         if (this.phase === 1) {
-            // Movimiento hacia el jugador
+            // Fase 1: El jefe se mueve hacia el jugador lentamente
+            const angle = Math.atan2(player.y - this.y, player.x - this.x);
+            this.x += this.speed * Math.cos(angle);
+            this.y += this.speed * Math.sin(angle);
+
+            // Si el jefe llega cerca del jugador, pasa a la fase 2
+            if (this.health < 15) {
+                this.phase = 2;
+            }
         } else if (this.phase === 2) {
-            // Disparar balas
+            // Fase 2: El jefe dispara balas hacia el jugador en intervalos
+            if (currentTime - this.lastShotTime >= this.shootCooldown) {
+                this.shoot();
+                this.lastShotTime = currentTime;
+            }
+
+            // Si la salud baja a menos de 10, pasa a la fase 3
+            if (this.health < 10) {
+                this.phase = 3;
+                this.speed = 4; // Aumenta la velocidad en la última fase
+            }
         } else if (this.phase === 3) {
-            // Hacer ambas cosas
+            // Fase 3: Combina movimiento rápido y disparos
+            const angle = Math.atan2(player.y - this.y, player.x - this.x);
+            this.x += this.speed * Math.cos(angle);
+            this.y += this.speed * Math.sin(angle);
+
+            // Disparos más rápidos
+            if (currentTime - this.lastShotTime >= this.shootCooldown / 2) {
+                this.shoot();
+                this.lastShotTime = currentTime;
+            }
+        }
+    }
+
+    shoot() {
+        // Disparo de balas hacia el jugador
+        const bossBullet = new EnemyBullet(this.x, this.y, Math.atan2(player.y - this.y, player.x - this.x));
+        enemyBullets.push(bossBullet);
+    }
+
+    receiveDamage(damage) {
+        this.health -= damage;
+        if (this.health <= 0) {
+            this.active = false;
+            bossActive = false; // Permitir la aparición de un nuevo jefe
         }
     }
 }
 
 function spawnEnemies(currentScore) {
     const currentTime = Date.now();
-    if (currentTime - lastSpawnTime > spawnInterval) {
+
+    // Solo hacer spawn de enemigos normales si no hay un jefe activo
+    if (!bossActive && currentTime - lastSpawnTime > spawnInterval) {
         let enemy;
         const rand = Math.random();
 
+        // Aparecen desde los bordes
+        const side = Math.floor(Math.random() * 4);
+        let x, y;
+        switch (side) {
+            case 0: x = Math.random() * canvas.width; y = -30; break; // Aparece desde arriba
+            case 1: x = canvas.width + 30; y = Math.random() * canvas.height; break; // Derecha
+            case 2: x = Math.random() * canvas.width; y = canvas.height + 30; break; // Abajo
+            case 3: x = -30; y = Math.random() * canvas.height; break; // Izquierda
+        }
+
         if (rand < 0.25) {
-            enemy = new Kamikaze(Math.random() * canvas.width, Math.random() * canvas.height);
+            enemy = new Kamikaze(x, y);
         } else if (rand < 0.5) {
-            enemy = new Gun(Math.random() * canvas.width, Math.random() * canvas.height);
+            enemy = new Gun(x, y);
         } else {
-            enemy = new Meteorite(Math.random() * canvas.width, 0);
+            enemy = new Meteorite(x, y); // Meteoritos siguen apareciendo
         }
 
         enemies.push(enemy);
         lastSpawnTime = currentTime;
     }
 
-    if (currentScore >= 1000 && currentScore % 1000 === 0) {
+    // Aparición del boss si el puntaje es suficiente y no hay uno activo
+    if (currentScore >= 1000 && !bossActive) {
         enemies.push(new Boss());
+        bossActive = true; // Marcar que el jefe está en pantalla
     }
 }
 
