@@ -1,5 +1,4 @@
-const songs = [
-    '/audio/music/song1.mp3',
+const songs = [  
     '/audio/music/song2.mp3',
     '/audio/music/song3.mp3',
     '/audio/music/song4.mp3',
