@@ -1,6 +1,6 @@
 const enemies = [];
 let enemySpeed = 2;
-let spawnInterval = 1000;
+let spawnInterval = 900;
 let lastSpawnTime = 0;
 let bossActive = false; // Controla si el jefe está activo
 
@@ -64,7 +64,7 @@ class Kamikaze extends Enemy {
 class Gun extends Enemy {
     constructor(x, y) {
         super(x, y, 1, 10, enemySpeed, 'blue');
-        this.shootCooldown = 1000;
+        this.shootCooldown = 500;
         this.lastShotTime = 0;
     }
 
@@ -133,7 +133,7 @@ class Meteorite extends Enemy {
 
 class Boss extends Enemy {
     constructor() {
-        super(canvas.width / 2, -50, 50, 30, 2, 'purple'); // Vida del Boss = 50
+        super(canvas.width / 2, -50, 50, 30, 3, 'purple'); // Vida del Boss = 50
         this.phase = 1;
         this.shootCooldown = 500;  // Cooldown inicial de los disparos
         this.lastShotTime = 0;
@@ -148,7 +148,7 @@ class Boss extends Enemy {
             this.x += this.speed * Math.cos(angle);
             this.y += this.speed * Math.sin(angle);
 
-            if (this.health <= 40) {
+            if (this.health <= 30) {
                 this.phase = 2;
             }
         } else if (this.phase === 2) {
@@ -158,7 +158,7 @@ class Boss extends Enemy {
                 this.lastShotTime = currentTime;
             }
 
-            if (this.health <= 30) {
+            if (this.health <= 20) {
                 this.phase = 3;
                 this.speed = 1;  // Reducir la velocidad en la fase 3
                 this.shootCooldown = 500;  // Disparar más rápido en la fase 3
@@ -196,7 +196,36 @@ class Boss extends Enemy {
     }
 }
 
+function checkEnemyCollisions() {
+    for (let i = 0; i < enemies.length; i++) {
+        for (let j = i + 1; j < enemies.length; j++) {
+            const distX = enemies[i].x - enemies[j].x;
+            const distY = enemies[i].y - enemies[j].y;
+            const distance = Math.sqrt(distX * distX + distY * distY);
 
+            // Si la distancia entre dos enemigos es menor que la suma de sus tamaños, colisionan
+            if (distance < enemies[i].size + enemies[j].size) {
+                
+                // Si el primer enemigo es el Boss, elimina solo al segundo enemigo
+                if (enemies[i] instanceof Boss) {
+                    enemies.splice(j, 1);  // Elimina al enemigo que colisiona con el Boss
+                    break;
+                }
+                
+                // Si el segundo enemigo es el Boss, elimina solo al primer enemigo
+                if (enemies[j] instanceof Boss) {
+                    enemies.splice(i, 1);  // Elimina al enemigo que colisiona con el Boss
+                    break;
+                }
+
+                // Si ninguno es el Boss, eliminar ambos enemigos
+                enemies.splice(j, 1);  // Elimina al segundo enemigo
+                enemies.splice(i, 1);  // Luego elimina al primero
+                break;  // Romper el bucle para evitar errores de índice
+            }
+        }
+    }
+}
 
 function spawnEnemies(currentScore) {
     const currentTime = Date.now();
@@ -254,4 +283,7 @@ function updateEnemies(ctx) {
             enemies.splice(index, 1);
         }
     });
+
+    // Llamar a la nueva función que verifica colisiones entre enemigos
+    checkEnemyCollisions();
 }

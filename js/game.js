@@ -125,18 +125,23 @@ function checkCollisions() {
         const distY = player.y - enemy.y;
         const distance = Math.sqrt(distX * distX + distY * distY);
 
-        // Si la distancia entre el jugador y el enemigo es menor que la suma de sus tamaños, colisionan
         if (distance < player.size + enemy.size) {
-            // Reducir la salud del jugador según el daño del enemigo
-            player.health -= enemy.damage;
-            if (player.health < 0) player.health = 0;
+            if (enemy instanceof Boss) {
+                // Rebote del jugador al chocar con el boss
+                const angle = Math.atan2(player.y - enemy.y, player.x - enemy.x);
+                const reboundDistance = 50; // Distancia del rebote
+                player.x += Math.cos(angle) * reboundDistance;
+                player.y += Math.sin(angle) * reboundDistance;
+            } else {
+                // Daño normal al jugador si choca con otros enemigos
+                player.health -= enemy.damage;
+                if (player.health < 0) player.health = 0;
 
-            // Reducir el score en 100 puntos (o la cantidad que prefieras) al colisionar
-            score -= 100;
-            if (score < 0) score = 0; // Evitar que el score sea negativo
+                score -= 100;
+                if (score < 0) score = 0;
 
-            // Eliminar al enemigo tras colisionar
-            enemies.splice(index, 1);
+                enemies.splice(index, 1); // Eliminar el enemigo tras colisionar
+            }
         }
     });
 }
