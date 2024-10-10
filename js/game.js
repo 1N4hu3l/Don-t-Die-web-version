@@ -110,6 +110,12 @@ function drawPlayer() {
     ctx.rotate(player.angle);
     ctx.fillStyle = player.color;
     ctx.fillRect(-player.size / 2, -player.size / 2, player.size, player.size);
+
+    // Agregar borde violeta a la hitbox del jugador
+    ctx.strokeStyle = 'violet';
+    ctx.lineWidth = 3;
+    ctx.strokeRect(-player.size / 2, -player.size / 2, player.size, player.size);
+
     ctx.restore();
 }
 
@@ -123,7 +129,7 @@ function checkCollisions() {
             player.health -= enemy.damage;
             if (player.health < 0) player.health = 0;
 
-            if (enemy instanceof Kamikaze) {
+            if (enemy instanceof Kamikaze || enemy instanceof Meteorite) {
                 enemies.splice(index, 1);
             }
         }
@@ -134,6 +140,7 @@ function gameLoop() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     updatePlayer();
     updateBullets();
+    updateEnemyBullets(); // Actualizamos las balas de los enemigos
     drawPlayer();
     drawHealthBar();
     drawScore();
@@ -141,6 +148,7 @@ function gameLoop() {
     updateEnemies(ctx);
     checkCollisions();
     checkBulletEnemyCollisions();
+    checkEnemyBulletPlayerCollisions(); // Detectamos colisiones de balas de enemigos con el jugador
     requestAnimationFrame(gameLoop);
 }
 

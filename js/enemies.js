@@ -1,16 +1,13 @@
 const enemies = [];
 let enemySpeed = 2;
-let enemyHealth = 50;
-let enemyDamage = 10;
 let spawnInterval = 1000;
 let lastSpawnTime = 0;
-let enemyGrowthFactor = 0.01;
 
 class Enemy {
     constructor(x, y, health, damage, speed, color) {
         this.x = x;
         this.y = y;
-        this.health = health;
+        this.health = 1; // Todos los enemigos tienen 1 de vida
         this.damage = damage;
         this.speed = speed;
         this.size = 30;
@@ -25,6 +22,11 @@ class Enemy {
         ctx.beginPath();
         ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
         ctx.fill();
+
+        // Agregar borde violeta a todos los enemigos
+        ctx.strokeStyle = 'violet';
+        ctx.lineWidth = 3;
+        ctx.stroke();
     }
 
     outOfBounds() {
@@ -48,7 +50,7 @@ class Enemy {
 
 class Kamikaze extends Enemy {
     constructor(x, y) {
-        super(x, y, 20, 20, enemySpeed, 'red');
+        super(x, y, 1, 20, enemySpeed, 'red');
     }
 
     update() {
@@ -60,7 +62,7 @@ class Kamikaze extends Enemy {
 
 class Gun extends Enemy {
     constructor(x, y) {
-        super(x, y, 30, 10, enemySpeed, 'blue');
+        super(x, y, 1, 10, enemySpeed, 'blue');
         this.shootCooldown = 1000;
         this.lastShotTime = 0;
     }
@@ -78,14 +80,15 @@ class Gun extends Enemy {
     }
 
     shoot() {
-        const bullet = new Bullet(this.x, this.y, Math.atan2(player.y - this.y, player.x - this.x));
-        bullets.push(bullet);
+        const enemyBullet = new EnemyBullet(this.x, this.y, Math.atan2(player.y - this.y, player.x - this.x));
+        enemyBullets.push(enemyBullet);
     }
 }
 
 class Meteorite extends Enemy {
     constructor(x, y) {
-        super(x, y, 30, 30, enemySpeed, 'gray');
+        // El meteorito mata al jugador de una (daño igual a la vida máxima del jugador)
+        super(x, y, 1, player.maxHealth, enemySpeed, 'gray');
     }
 
     update() {
@@ -93,24 +96,9 @@ class Meteorite extends Enemy {
     }
 }
 
-// Clase Meteorito Especial
-class SpecialMeteorite extends Meteorite {
-    constructor(x, y) {
-        super(x, y);
-        this.color = 'orange'; // Color naranja para meteoritos especiales
-    }
-
-    draw(ctx) {
-        ctx.fillStyle = this.color;
-        ctx.beginPath();
-        ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
-        ctx.fill();
-    }
-}
-
 class Boss extends Enemy {
     constructor() {
-        super(canvas.width / 2, -50, 100, 30, 2, 'purple');
+        super(canvas.width / 2, -50, 1, 30, 2, 'purple');
         this.phase = 1;
     }
 
@@ -131,9 +119,7 @@ function spawnEnemies(currentScore) {
         let enemy;
         const rand = Math.random();
 
-        if (rand < 0.2) { // 20% de probabilidad para un meteorito especial
-            enemy = new SpecialMeteorite(Math.random() * canvas.width, 0);
-        } else if (rand < 0.25) {
+        if (rand < 0.25) {
             enemy = new Kamikaze(Math.random() * canvas.width, Math.random() * canvas.height);
         } else if (rand < 0.5) {
             enemy = new Gun(Math.random() * canvas.width, Math.random() * canvas.height);
@@ -143,11 +129,6 @@ function spawnEnemies(currentScore) {
 
         enemies.push(enemy);
         lastSpawnTime = currentTime;
-    }
-
-    if (currentScore > 150 && currentScore % 150 === 0) {
-        enemyHealth += enemyGrowthFactor * enemyHealth;
-        enemySpeed += enemyGrowthFactor * enemySpeed;
     }
 
     if (currentScore >= 1000 && currentScore % 1000 === 0) {
