@@ -7,7 +7,7 @@ class Enemy {
     constructor(x, y, health, damage, speed, color) {
         this.x = x;
         this.y = y;
-        this.health = 1; // Todos los enemigos tienen 1 de vida
+        this.health = 1; 
         this.damage = damage;
         this.speed = speed;
         this.size = 30;
@@ -23,7 +23,7 @@ class Enemy {
         ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
         ctx.fill();
 
-        // Agregar borde violeta a todos los enemigos
+        // borde violeta a todos los enemigos
         ctx.strokeStyle = 'violet';
         ctx.lineWidth = 3;
         ctx.stroke();
