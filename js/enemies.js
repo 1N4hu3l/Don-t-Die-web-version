@@ -8,7 +8,7 @@ class Enemy {
     constructor(x, y, health, damage, speed, color) {
         this.x = x;
         this.y = y;
-        this.health = 1; 
+        this.health = 100; 
         this.damage = damage;
         this.speed = speed;
         this.size = 30;
