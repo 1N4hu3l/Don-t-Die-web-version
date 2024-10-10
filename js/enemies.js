@@ -8,7 +8,7 @@ class Enemy {
     constructor(x, y, health, damage, speed, color) {
         this.x = x;
         this.y = y;
-        this.health = 100; 
+        this.health = 1; 
         this.damage = damage;
         this.speed = speed;
         this.size = 30;
@@ -133,7 +133,7 @@ class Meteorite extends Enemy {
 
 class Boss extends Enemy {
     constructor() {
-        super(canvas.width / 2, -50, -10, 30, 2, 'purple'); // Vida del Boss = 100
+        super(canvas.width / 2, -50, 10, 30, 2, 'purple'); // Vida del Boss = 100
         this.phase = 1;
         this.shootCooldown = 2000;
         this.lastShotTime = 0;
