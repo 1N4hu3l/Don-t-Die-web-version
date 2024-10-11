@@ -43,5 +43,5 @@ document.addEventListener('DOMContentLoaded', function () {
 });
 
 // Ejemplo de cómo puedes ajustar el volumen y la velocidad:
-setVolume(0.2); 
+setVolume(0.05); 
 
