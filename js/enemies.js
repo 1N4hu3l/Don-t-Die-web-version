@@ -35,7 +35,7 @@ class Enemy {
         ctx.fill();
 
         // borde violeta a todos los enemigos
-        ctx.strokeStyle = 'violet';
+        ctx.strokeStyle = 'none';
         ctx.lineWidth = 3;
         ctx.stroke();
     }
@@ -84,7 +84,7 @@ class Kamikaze extends Enemy {
         ctx.drawImage(kamikazeSprite, -this.width / 2, -this.height / 2, this.width, this.height);
 
         // Dibujar la hitbox escalada alrededor del sprite
-        ctx.strokeStyle = 'violet';
+        ctx.strokeStyle = 'none';
         ctx.lineWidth = 2;
         ctx.strokeRect(-this.width / 2, -this.height / 2, this.width, this.height);
 
@@ -133,7 +133,7 @@ class Gun extends Enemy {
         ctx.drawImage(gunSprite, -this.width / 2, -this.height / 2, this.width, this.height);
 
         // Dibujar la hitbox escalada alrededor del sprite
-        ctx.strokeStyle = 'violet';
+        ctx.strokeStyle = 'none';
         ctx.lineWidth = 2;
         ctx.strokeRect(-this.width / 2, -this.height / 2, this.width, this.height);
 
@@ -175,7 +175,7 @@ class Meteorite extends Enemy {
         ctx.drawImage(meteoriteSprite, -this.width / 2, -this.height / 2, this.width, this.height);
 
         // Dibujar la hitbox escalada alrededor del sprite
-        ctx.strokeStyle = 'violet';
+        ctx.strokeStyle = 'none';
         ctx.lineWidth = 3;
         ctx.strokeRect(-this.width / 2, -this.height / 2, this.width, this.height);
 
@@ -257,7 +257,7 @@ class Boss extends Enemy {
         ctx.drawImage(bossSprite, -this.width / 2, -this.height / 2, this.width, this.height);
 
         // Dibujar la hitbox escalada alrededor del sprite
-        ctx.strokeStyle = 'violet';
+        ctx.strokeStyle = 'none';
         ctx.lineWidth = 3;
         ctx.strokeRect(-this.width / 2, -this.height / 2, this.width, this.height);
 

@@ -42,7 +42,7 @@ class Bullet {
         ctx.drawImage(bulletSprite, -this.width / 2, -this.height / 2, this.width, this.height);
 
         // Opcional: Añadir un borde violeta
-        ctx.strokeStyle = 'violet';
+        ctx.strokeStyle = 'none';
         ctx.lineWidth = 2;
         ctx.strokeRect(-this.width / 2, -this.height / 2, this.width, this.height);
 
