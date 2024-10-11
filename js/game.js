@@ -1,8 +1,8 @@
 const font = new FontFace('MyCustomFont', 'url(./fonts/Myfont.ttf)');
 
-font.load().then(function(loadedFont) {
+font.load().then(function (loadedFont) {
     document.fonts.add(loadedFont);
-}).catch(function(error) {
+}).catch(function (error) {
     console.error('Error loading font:', error);
 });
 
@@ -93,10 +93,10 @@ const scriptEnemies = document.createElement('script');
 scriptEnemies.src = '/js/enemies.js';
 document.head.appendChild(scriptEnemies);
 
-scriptEnemies.onload = function() {
+scriptEnemies.onload = function () {
     const script = document.createElement('script');
     script.src = '/js/shooting.js';
-    script.onload = function() {
+    script.onload = function () {
         showMenu();  // Mostrar el menú principal al cargar los scripts
     };
     document.head.appendChild(script);
@@ -124,7 +124,7 @@ const player = {
 };
 
 // Esperar a que cargue el sprite del jugador
-playerSprite.onload = function() {
+playerSprite.onload = function () {
     player.width = playerSprite.width * player.scale;
     player.height = playerSprite.height * player.scale;
 };

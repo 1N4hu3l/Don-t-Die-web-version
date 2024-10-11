@@ -140,7 +140,7 @@ function checkEnemyBulletPlayerCollisions() {
             bullet.x + bullet.width > player.x &&
             bullet.y < player.y + player.height &&
             bullet.y + bullet.height > player.y) {
-            
+
             // Reducir la vida del jugador
             player.health -= 20; // Ajusta el daño según sea necesario
             if (player.health <= 0) {

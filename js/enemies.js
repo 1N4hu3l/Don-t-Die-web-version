@@ -18,7 +18,7 @@ class Enemy {
     constructor(x, y, health, damage, speed, color) {
         this.x = x;
         this.y = y;
-        this.health = health; 
+        this.health = health;
         this.damage = damage;
         this.speed = speed;
         this.size = 30;
@@ -26,7 +26,7 @@ class Enemy {
         this.active = true;
     }
 
-    update() {}
+    update() { }
 
     draw(ctx) {
         ctx.fillStyle = this.color;
@@ -144,7 +144,7 @@ class Gun extends Enemy {
 class Meteorite extends Enemy {
     constructor() {
         // Configuración inicial de los meteoritos (posición, velocidad, etc.)
-        const side = Math.floor(Math.random() * 4); 
+        const side = Math.floor(Math.random() * 4);
         let x, y, speedX, speedY;
 
         switch (side) {
@@ -170,7 +170,7 @@ class Meteorite extends Enemy {
     draw(ctx) {
         ctx.save();
         ctx.translate(this.x, this.y);
-        
+
         // Dibujar el sprite del meteorito escalado
         ctx.drawImage(meteoriteSprite, -this.width / 2, -this.height / 2, this.width, this.height);
 
@@ -276,13 +276,13 @@ function checkEnemyCollisions() {
 
             // Si la distancia entre dos enemigos es menor que la suma de sus tamaños, colisionan
             if (distance < enemies[i].size + enemies[j].size) {
-                
+
                 // Si el primer enemigo es el Boss, elimina solo al segundo enemigo
                 if (enemies[i] instanceof Boss) {
                     enemies.splice(j, 1);  // Elimina al enemigo que colisiona con el Boss
                     break;
                 }
-                
+
                 // Si el segundo enemigo es el Boss, elimina solo al primer enemigo
                 if (enemies[j] instanceof Boss) {
                     enemies.splice(i, 1);  // Elimina al enemigo que colisiona con el Boss

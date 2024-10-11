@@ -28,7 +28,7 @@
     <div id="rulesModal" class="modal">
         <div class="modal-content">
             <h2>Rules</h2>
-            <p>Simple no mueras, te moves con las flechas  y disparas con el espacio
+            <p>Simple no mueras, te moves con las flechas y disparas con el espacio
             </p>
             <button id="closeRulesButton">Close</button>
         </div>
@@ -45,6 +45,13 @@
         </div>
     </div>
 
+    <button id="playMusicButton">Play Music</button>
+    <script>
+        document.getElementById('playMusicButton').addEventListener('click', function playMusic() {
+            playRandomTrack();
+            this.style.display = 'none';  // Oculta el botón después de que el usuario haga clic
+        });
+    </script>
 
     <canvas id="gameCanvas"></canvas>
 
