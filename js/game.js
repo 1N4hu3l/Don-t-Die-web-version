@@ -13,27 +13,32 @@ const scriptEnemies = document.createElement('script');
 scriptEnemies.src = '/js/enemies.js'; 
 document.head.appendChild(scriptEnemies);
 
-const script = document.createElement('script');
-script.src = '/js/shooting.js';
-script.onload = function() {
-    gameLoop();
+// Cuando el script de enemigos se cargue, entonces cargamos shooting.js y finalmente ejecutamos el gameLoop
+scriptEnemies.onload = function() {
+    const script = document.createElement('script');
+    script.src = '/js/shooting.js';
+    script.onload = function() {
+        gameLoop();  // Solo ejecutar gameLoop después de que ambos scripts se hayan cargado
+    };
+    document.head.appendChild(script);
 };
-document.head.appendChild(script);
 
-let score = 950;
+let score = 0;
 
 canvas.width = window.innerWidth;
 canvas.height = window.innerHeight;
+const playerSprite = new Image();
+playerSprite.src = '/sprites/player_ship.png';  // Ruta de tu sprite
 
 const player = {
     x: canvas.width / 2,
     y: canvas.height / 2,
-    size: 20,
+    width: 40,  // Ancho real del sprite
+    height: 40, // Alto real del sprite
     speed: 5,
     angle: 0,
-    color: 'white',
-    maxHealth: 100,
-    health: 100
+    health: 100,
+    maxHealth: 100
 };
 
 function drawHealthBar() {
@@ -94,11 +99,13 @@ function updatePlayer() {
         moving = true;
     }
 
-    if (player.x < player.size) player.x = player.size;
-    if (player.x > canvas.width - player.size) player.x = canvas.width - player.size;
-    if (player.y < player.size) player.y = player.size;
-    if (player.y > canvas.height - player.size) player.y = canvas.height - player.size;
+    // Limitar movimiento dentro de los bordes del canvas
+    if (player.x < player.width / 2) player.x = player.width / 2;
+    if (player.x > canvas.width - player.width / 2) player.x = canvas.width - player.width / 2;
+    if (player.y < player.height / 2) player.y = player.height / 2;
+    if (player.y > canvas.height - player.height / 2) player.y = canvas.height - player.height / 2;
 
+    // Calcular el ángulo si se está moviendo
     if (moving) {
         player.angle = Math.atan2(keys.ArrowDown - keys.ArrowUp, keys.ArrowRight - keys.ArrowLeft);
     }
@@ -108,13 +115,14 @@ function drawPlayer() {
     ctx.save();
     ctx.translate(player.x, player.y);
     ctx.rotate(player.angle);
-    ctx.fillStyle = player.color;
-    ctx.fillRect(-player.size / 2, -player.size / 2, player.size, player.size);
 
-    // borde violeta a la hitbox del jugador
+    // Dibujar el sprite del jugador
+    ctx.drawImage(playerSprite, -player.width / 2, -player.height / 2, player.width, player.height);
+
+    // Dibujar la hitbox con borde violeta
     ctx.strokeStyle = 'violet';
-    ctx.lineWidth = 3;
-    ctx.strokeRect(-player.size / 2, -player.size / 2, player.size, player.size);
+    ctx.lineWidth = 1;
+    ctx.strokeRect(-player.width / 2, -player.height / 2, player.width, player.height);  // Ajustar a la hitbox precisa
 
     ctx.restore();
 }
@@ -125,7 +133,8 @@ function checkCollisions() {
         const distY = player.y - enemy.y;
         const distance = Math.sqrt(distX * distX + distY * distY);
 
-        if (distance < player.size + enemy.size) {
+        // Verificar colisión con hitbox más precisa
+        if (distance < (player.width / 2 + enemy.size)) {
             if (enemy instanceof Boss) {
                 // Rebote del jugador al chocar con el boss
                 const angle = Math.atan2(player.y - enemy.y, player.x - enemy.x);
@@ -145,7 +154,6 @@ function checkCollisions() {
         }
     });
 }
-
 
 function gameLoop() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -169,8 +177,6 @@ function gameLoop() {
     checkEnemyBulletPlayerCollisions();
     requestAnimationFrame(gameLoop);
 }
-
-
 
 window.addEventListener('resize', () => {
     canvas.width = window.innerWidth;

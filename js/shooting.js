@@ -2,12 +2,14 @@ const bullets = []; // Balas del jugador
 const enemyBullets = []; // Balas de los enemigos
 let lastShotTime = 0;
 const shootCooldown = 250;
+const bulletSprite = new Image();
+bulletSprite.src = '/sprites/beam.png';  // Ruta del sprite de la bala
 
 class Bullet {
     constructor(x, y, angle) {
         this.x = x;
         this.y = y;
-        this.size = 10;
+        this.size = 20;  // Ajusta este valor según el tamaño de tu sprite
         this.speed = 10;
         this.angle = angle;
     }
@@ -18,15 +20,19 @@ class Bullet {
     }
 
     draw() {
-        ctx.fillStyle = 'yellow';
-        ctx.beginPath();
-        ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
-        ctx.fill();
+        ctx.save();
+        ctx.translate(this.x, this.y);
+        ctx.rotate(this.angle);
+        
+        // Dibujar el sprite de la bala
+        ctx.drawImage(bulletSprite, -this.size / 2, -this.size / 2, this.size, this.size);
 
-        // Agregar borde violeta a las balas del jugador
-        ctx.strokeStyle = 'violeta';
+        // Puedes añadir también un borde violeta si lo deseas
+        ctx.strokeStyle = 'violet';
         ctx.lineWidth = 2;
-        ctx.stroke();
+        ctx.strokeRect(-this.size / 2, -this.size / 2, this.size, this.size);
+
+        ctx.restore();
     }
 
     outOfBounds() {

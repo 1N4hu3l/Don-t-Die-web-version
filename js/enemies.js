@@ -3,6 +3,8 @@ let enemySpeed = 2;
 let spawnInterval = 900;
 let lastSpawnTime = 0;
 let bossActive = false; // Controla si el jefe está activo
+const meteoriteSprite = new Image();
+meteoriteSprite.src = '/sprites/meteorite.png';
 
 class Enemy {
     constructor(x, y, health, damage, speed, color) {
@@ -88,54 +90,50 @@ class Gun extends Enemy {
 
 class Meteorite extends Enemy {
     constructor() {
-        // Determina desde qué lado de la pantalla aparecerá el meteorito
-        const side = Math.floor(Math.random() * 4); // 0: arriba, 1: derecha, 2: abajo, 3: izquierda
+        // Configuración inicial de los meteoritos (posición, velocidad, etc.)
+        const side = Math.floor(Math.random() * 4); 
         let x, y, speedX, speedY;
 
         switch (side) {
-            case 0: // Aparece arriba
-                x = Math.random() * canvas.width;
-                y = -30; // fuera del canvas
-                speedX = (Math.random() - 0.5) * enemySpeed;
-                speedY = enemySpeed;
-                break;
-            case 1: // Aparece a la derecha
-                x = canvas.width + 30;
-                y = Math.random() * canvas.height;
-                speedX = -enemySpeed;
-                speedY = (Math.random() - 0.5) * enemySpeed;
-                break;
-            case 2: // Aparece abajo
-                x = Math.random() * canvas.width;
-                y = canvas.height + 30;
-                speedX = (Math.random() - 0.5) * enemySpeed;
-                speedY = -enemySpeed;
-                break;
-            case 3: // Aparece a la izquierda
-                x = -30;
-                y = Math.random() * canvas.height;
-                speedX = enemySpeed;
-                speedY = (Math.random() - 0.5) * enemySpeed;
-                break;
+            case 0: x = Math.random() * canvas.width; y = -30; speedX = (Math.random() - 0.5) * enemySpeed; speedY = enemySpeed; break;
+            case 1: x = canvas.width + 30; y = Math.random() * canvas.height; speedX = -enemySpeed; speedY = (Math.random() - 0.5) * enemySpeed; break;
+            case 2: x = Math.random() * canvas.width; y = canvas.height + 30; speedX = (Math.random() - 0.5) * enemySpeed; speedY = -enemySpeed; break;
+            case 3: x = -30; y = Math.random() * canvas.height; speedX = enemySpeed; speedY = (Math.random() - 0.5) * enemySpeed; break;
         }
 
-        // Constructor con nueva velocidad y dirección
         super(x, y, 1, 50, enemySpeed, 'gray');
         this.speedX = speedX;
         this.speedY = speedY;
+        this.size = 50;  // Tamaño del meteorito (ajusta según el sprite)
     }
 
     update() {
         this.x += this.speedX;
         this.y += this.speedY;
     }
+
+    draw(ctx) {
+        ctx.save();
+        ctx.translate(this.x, this.y);
+        
+        // Dibujar el sprite del meteorito
+        ctx.drawImage(meteoriteSprite, -this.size / 2, -this.size / 2, this.size, this.size);
+
+        // Si quieres, puedes mantener el borde violeta
+        ctx.strokeStyle = 'violet';
+        ctx.lineWidth = 3;
+        ctx.strokeRect(-this.size / 2, -this.size / 2, this.size, this.size);
+
+        ctx.restore();
+    }
 }
+
 
 class Boss extends Enemy {
     constructor() {
         super(canvas.width / 2, -50, 50, 30, 3, 'purple'); // Vida del Boss = 50
         this.phase = 1;
-        this.shootCooldown = 500;  // Cooldown inicial de los disparos
+        this.shootCooldown = 400;  // Cooldown inicial de los disparos
         this.lastShotTime = 0;
     }
 
@@ -160,8 +158,8 @@ class Boss extends Enemy {
 
             if (this.health <= 20) {
                 this.phase = 3;
-                this.speed = 1;  // Reducir la velocidad en la fase 3
-                this.shootCooldown = 500;  // Disparar más rápido en la fase 3
+                this.speed = 2;  // Reducir la velocidad en la fase 3
+                this.shootCooldown = 300;  // Disparar más rápido en la fase 3
             }
         } else if (this.phase === 3) {
             // Fase 3: Movimiento lento y disparos rápidos
