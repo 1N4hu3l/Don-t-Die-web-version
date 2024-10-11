@@ -1,4 +1,4 @@
-const font = new FontFace('MyFont', 'url(./fonts/Myfont.ttf)');
+const font = new FontFace('MyCustomFont', 'url(./fonts/Myfont.ttf)');
 
 font.load().then(function(loadedFont) {
     document.fonts.add(loadedFont);
@@ -8,6 +8,24 @@ font.load().then(function(loadedFont) {
 
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
+
+// Obtener las pantallas de menú, game over y los modales
+const menuScreen = document.getElementById('menu');
+const gameOverScreen = document.getElementById('gameOver');
+const scoreDisplay = document.getElementById('scoreDisplay');
+const rulesModal = document.getElementById('rulesModal');
+const whyModal = document.getElementById('whyModal');
+
+// Botones
+document.getElementById('playButton').addEventListener('click', startGame);
+document.getElementById('menuButton').addEventListener('click', showMenu);
+document.getElementById('retryButton').addEventListener('click', retryGame);
+document.getElementById('rulesButton').addEventListener('click', showRulesModal);
+document.getElementById('whyButton').addEventListener('click', showWhyModal);
+
+// Botones para cerrar los modales
+document.getElementById('closeRulesButton').addEventListener('click', closeRulesModal);
+document.getElementById('closeWhyButton').addEventListener('click', closeWhyModal);
 
 // Cargar la imagen del fondo
 const backgroundImage = new Image();
@@ -28,26 +46,64 @@ function updateBackground() {
 
 // Dibujar el fondo
 function drawBackground() {
-    // Dibujar el fondo dos veces para crear el bucle
     ctx.drawImage(backgroundImage, 0, backgroundY, canvas.width, canvas.height);
     ctx.drawImage(backgroundImage, 0, backgroundY - canvas.height, canvas.width, canvas.height);
+}
+
+// Animar el fondo en el menú
+function animateMenuBackground() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    // Actualizar y dibujar el fondo
+    updateBackground();
+    drawBackground();
+
+    // Generar meteoritos/enemigos de fondo
+    updateMenuEnemies();
+
+    if (gameOver || menuScreen.style.display === 'block') {
+        requestAnimationFrame(animateMenuBackground);  // Seguir animando si estamos en el menú o game over
+    }
+}
+
+// Lista de meteoritos/enemigos en el fondo del menú
+let menuEnemies = [];
+
+function spawnMenuEnemies() {
+    const meteorite = new Meteorite();  // Usamos la clase de Meteorito ya creada
+    menuEnemies.push(meteorite);
+}
+
+function updateMenuEnemies() {
+    menuEnemies.forEach((enemy, index) => {
+        enemy.update();
+        enemy.draw(ctx);
+        if (enemy.outOfBounds()) {
+            menuEnemies.splice(index, 1);  // Eliminar los meteoritos que salgan de la pantalla
+        }
+    });
+
+    // Añadir un meteorito cada pocos segundos
+    if (Math.random() < 0.01) {  // Ajusta la probabilidad de aparición
+        spawnMenuEnemies();
+    }
 }
 
 const scriptEnemies = document.createElement('script');
 scriptEnemies.src = '/js/enemies.js';
 document.head.appendChild(scriptEnemies);
 
-// Cuando el script de enemigos se cargue, entonces cargamos shooting.js y finalmente ejecutamos el gameLoop
 scriptEnemies.onload = function() {
     const script = document.createElement('script');
     script.src = '/js/shooting.js';
     script.onload = function() {
-        gameLoop();  // Solo ejecutar gameLoop después de que ambos scripts se hayan cargado
+        showMenu();  // Mostrar el menú principal al cargar los scripts
     };
     document.head.appendChild(script);
 };
 
-let score = 950;
+let score = 0;
+let gameOver = false;
 
 canvas.width = window.innerWidth;
 canvas.height = window.innerHeight;
@@ -58,16 +114,16 @@ playerSprite.src = '/sprites/player_ship.png';  // Ruta de tu sprite
 const player = {
     x: canvas.width / 2,
     y: canvas.height / 2,
-    scale: 3,  // Factor de escala para el jugador
-    width: 0,    // Inicializaremos esto cuando cargue el sprite
-    height: 0,   // Lo mismo para la altura
-    speed: 5,
+    scale: 3,
+    width: 0,
+    height: 0,
+    speed: 6,
     angle: 0,
-    health: 100,
-    maxHealth: 100
+    health: 200,
+    maxHealth: 200
 };
 
-// Esperar a que cargue el sprite del jugador para ajustar las dimensiones
+// Esperar a que cargue el sprite del jugador
 playerSprite.onload = function() {
     player.width = playerSprite.width * player.scale;
     player.height = playerSprite.height * player.scale;
@@ -92,7 +148,7 @@ function drawHealthBar() {
 
 function drawScore() {
     ctx.fillStyle = 'white';
-    ctx.font = '30px MyFont';
+    ctx.font = '30px MyCustomFont';
     ctx.fillText(`Score: ${score}`, 20, 65);
 }
 
@@ -145,54 +201,45 @@ function updatePlayer() {
 
 function checkCollisions() {
     enemies.forEach((enemy, index) => {
-        // Verificar colisión con hitbox escalada (AABB)
         if (player.x < enemy.x + enemy.size &&
             player.x + player.width > enemy.x &&
             player.y < enemy.y + enemy.size &&
             player.y + player.height > enemy.y) {
 
             if (enemy instanceof Boss) {
-                // Rebote del jugador al chocar con el boss
                 const angle = Math.atan2(player.y - enemy.y, player.x - enemy.x);
                 const reboundDistance = 50;
                 player.x += Math.cos(angle) * reboundDistance;
                 player.y += Math.sin(angle) * reboundDistance;
             } else {
-                // Daño normal al jugador si choca con otros enemigos
                 player.health -= enemy.damage;
-                if (player.health < 0) player.health = 0;
+                if (player.health <= 0) {
+                    player.health = 0;
+                    triggerGameOver();
+                }
 
                 score -= 100;
                 if (score < 0) score = 0;
 
-                enemies.splice(index, 1); // Eliminar el enemigo tras colisionar
+                enemies.splice(index, 1);
             }
         }
     });
 }
 
-
 function drawPlayer() {
     ctx.save();
     ctx.translate(player.x, player.y);
     ctx.rotate(player.angle);
-
-    // Dibujar el sprite del jugador escalado
     ctx.drawImage(playerSprite, -player.width / 2, -player.height / 2, player.width, player.height);
-
-    // Dibujar la hitbox del jugador (escalada)
-    ctx.strokeStyle = 'violet';
-    ctx.lineWidth = 1;
-    ctx.strokeRect(-player.width / 2, -player.height / 2, player.width, player.height);
-
     ctx.restore();
 }
 
-
 function gameLoop() {
+    if (gameOver) return;
+
     ctx.clearRect(0, 0, canvas.width, canvas.height);
-    
-    // Actualizar y dibujar el fondo
+
     updateBackground();
     drawBackground();
 
@@ -203,21 +250,73 @@ function gameLoop() {
     drawHealthBar();
     drawScore();
 
-    // Revisamos si el jefe está activo o no
     if (!bossActive) {
-        spawnEnemies(score);  // Solo spawn de enemigos si no hay jefe
+        spawnEnemies(score);
     } else {
-        spawnMeteorites();  // Meteoritos siguen apareciendo con el jefe activo
+        spawnMeteorites();
     }
 
     updateEnemies(ctx);
     checkCollisions();
     checkBulletEnemyCollisions();
     checkEnemyBulletPlayerCollisions();
+
     requestAnimationFrame(gameLoop);
+}
+
+function startGame() {
+    score = 0;
+    player.health = player.maxHealth;
+    enemies.length = 0;
+    gameOver = false;
+
+    menuScreen.style.display = 'none';
+    gameOverScreen.style.display = 'none';
+    canvas.style.display = 'block';
+
+    gameLoop();
+}
+
+function showMenu() {
+    gameOverScreen.style.display = 'none';
+    menuScreen.style.display = 'block';
+    canvas.style.display = 'block';  // Mostrar el canvas para el fondo animado
+    gameOver = true;
+
+    animateMenuBackground();
+}
+
+function triggerGameOver() {
+    gameOver = true;
+    canvas.style.display = 'block';  // Mostrar el canvas para el fondo animado
+    gameOverScreen.style.display = 'block';
+    scoreDisplay.textContent = `Your score: ${score}`;
+
+    animateMenuBackground();
+}
+
+function retryGame() {
+    startGame();
 }
 
 window.addEventListener('resize', () => {
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight;
 });
+
+// Mostrar y ocultar los modales
+function showRulesModal() {
+    rulesModal.style.display = 'flex';
+}
+
+function closeRulesModal() {
+    rulesModal.style.display = 'none';
+}
+
+function showWhyModal() {
+    whyModal.style.display = 'flex';
+}
+
+function closeWhyModal() {
+    whyModal.style.display = 'none';
+}

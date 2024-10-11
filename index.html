@@ -9,7 +9,44 @@
 </head>
 
 <body>
+    <div id="menu" class="screen">
+        <h1>DON'T DIE</h1>
+        <h2>Web Version</h2>
+        <button id="playButton">Play</button>
+        <button id="rulesButton">Rules</button>
+        <button id="whyButton">Why?</button>
+    </div>
+
+    <div id="gameOver" class="screen">
+        <h1 class="game-over">DIE</h1>
+        <p id="scoreDisplay"></p>
+        <button id="menuButton">Menu</button>
+        <button id="retryButton">Retry</button>
+    </div>
+
+    <div id="rulesModal" class="modal">
+        <div class="modal-content">
+            <h2>Rules</h2>
+            <p>Simple no mueras, te moves con las flechas  y disparas con el espacio
+            </p>
+            <button id="closeRulesButton">Close</button>
+        </div>
+    </div>
+
+    <!-- Modal de Why? -->
+    <div id="whyModal" class="modal">
+        <div class="modal-content">
+            <h2>Why?</h2>
+            <p>Este proyecto fue elegido para mejorar mis habilidades de desarrollo web y programación de juegos.
+                Puedes ver el código en el siguiente enlace:</p>
+            <a href="https://github.com/mi-repositorio" target="_blank">Ver repositorio</a>
+            <button id="closeWhyButton">Close</button>
+        </div>
+    </div>
+
+
     <canvas id="gameCanvas"></canvas>
+
     <script src="/js/songs.js"></script>
     <script src="/js/game.js"></script>
 

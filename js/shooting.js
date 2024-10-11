@@ -140,12 +140,20 @@ function checkEnemyBulletPlayerCollisions() {
             bullet.x + bullet.width > player.x &&
             bullet.y < player.y + player.height &&
             bullet.y + bullet.height > player.y) {
-            player.health -= 20; // Daño al jugador
-            if (player.health < 0) player.health = 0;
-            enemyBullets.splice(bulletIndex, 1); // Eliminar la bala que impactó
+            
+            // Reducir la vida del jugador
+            player.health -= 20; // Ajusta el daño según sea necesario
+            if (player.health <= 0) {
+                player.health = 0;
+                triggerGameOver(); // Llamar a la función de Game Over
+            }
+
+            // Eliminar la bala que impactó
+            enemyBullets.splice(bulletIndex, 1);
         }
     });
 }
+
 
 
 window.addEventListener('keydown', (e) => {

@@ -1,24 +1,169 @@
-*{
+* {
     margin: 0;
     padding: 0;
     box-sizing: border-box;
 }
 
-body{
+body, h1, h2, button, canvas {
+    font-family: 'MyCustomFont', sans-serif;
+}
+
+body {
     display: flex;
     justify-content: center;
     align-items: center;
     height: 100vh;
     background-color: #000;
+    color: white;
+    font-family: 'MyCustomFont', sans-serif;
+    overflow: hidden;
+    position: relative; /* Asegura que los elementos posicionados se ajusten al body */
 }
 
-canvas{
+canvas {
     background-color: #222;
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 1;
 }
 
 @font-face {
     font-family: 'MyCustomFont';
-    src: url('../fonts/Myfont.ttf') format('truetype'); /* Asegúrate de que la ruta sea correcta */
+    src: url('../fonts/Myfont.ttf') format('truetype');
     font-weight: normal;
     font-style: normal;
+}
+
+/* Estilos para los menús */
+.screen {
+    display: none;
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    z-index: 10; /* Asegura que los menús estén por encima del canvas */
+    text-align: center;
+    margin-top: 20px; /* Margen superior leve */
+}
+
+#menu h1, #gameOver h1 {
+    font-size: 10em;
+    color: rgb(179, 15, 15);
+    margin-bottom: 10px; /* Margen inferior para separar del h2 */
+}
+
+#menu h2 {
+    font-size: 2em;
+    margin-bottom: 50px;
+    color: gray;
+}
+
+button {
+    padding: 15px 30px;
+    font-size: 1.5em;
+    background-color:transparent;
+    border: 2px solid white;
+    color: white;
+    margin: 10px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    border-radius: 5px;
+    -webkit-border-radius: 5px;
+    -moz-border-radius: 5px;
+    -ms-border-radius: 5px;
+    -o-border-radius: 5px;
+}
+
+button:hover {
+    background-color: #777;
+}
+
+#menu {
+    margin-top: 100px; /* Margen superior para darle un respiro al menú */
+}
+
+#menu button {
+    margin-top: 20px; /* Espaciado adicional entre los botones */
+}
+
+/* Game Over Screen */
+#gameOver h1 {
+    font-size: 10em;
+    color: red;
+    margin-bottom: 20px;
+}
+
+#scoreDisplay {
+    font-size: 2em;
+    margin-bottom: 20px;
+}
+
+/* Centrado vertical de los botones */
+.screen button {
+    display: block;
+    margin: 10px auto; /* Asegura que los botones estén centrados horizontalmente */
+}
+
+.modal {
+    display: none; /* Oculto por defecto */
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.8); /* Fondo semi-transparente */
+    z-index: 20; /* Por encima de todo */
+    justify-content: center;
+    align-items: center;
+}
+
+.modal-content {
+    background-color: #333;
+    padding: 20px;
+    border-radius: 8px;
+    text-align: center;
+    color: white;
+    max-width: 500px;
+    width: 80%;
+}
+
+.modal-content h2 {
+    margin-bottom: 20px;
+    font-size: 2em;
+}
+
+.modal-content p {
+    margin-bottom: 20px;
+    font-size: 1.2em;
+}
+
+.modal-content button {
+    padding: 10px 20px;
+    font-size: 1.2em;
+    background-color: #555;
+    color: white;
+    border: none;
+    cursor: pointer;
+}
+
+.modal-content button:hover {
+    background-color: #777;
+}
+
+.modal-content a {
+    color: cyan;
+    text-decoration: none;
+    font-size: 1.2em;
+}
+
+.modal-content a:hover {
+    text-decoration: underline;
 }
