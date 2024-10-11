@@ -4,14 +4,28 @@ let lastShotTime = 0;
 const shootCooldown = 250;
 const bulletSprite = new Image();
 bulletSprite.src = '/sprites/beam.png';  // Ruta del sprite de la bala
+const enemyBulletSprite = new Image();
+enemyBulletSprite.src = '/sprites/enemy_bullet.png';
+
+bulletSprite.onload = () => {
+    playerBulletWidth = bulletSprite.width;
+    playerBulletHeight = bulletSprite.height;
+};
+
+bulletSprite.onload = () => {
+    playerBulletWidth = bulletSprite.width;
+    playerBulletHeight = bulletSprite.height;
+};
 
 class Bullet {
     constructor(x, y, angle) {
         this.x = x;
         this.y = y;
-        this.size = 20;  // Ajusta este valor según el tamaño de tu sprite
         this.speed = 10;
         this.angle = angle;
+        this.scale = 3;  // Factor de escala para agrandar el tamaño de la bala
+        this.width = bulletSprite.width * this.scale;  // Ancho escalado del sprite
+        this.height = bulletSprite.height * this.scale;  // Alto escalado del sprite
     }
 
     update() {
@@ -23,14 +37,14 @@ class Bullet {
         ctx.save();
         ctx.translate(this.x, this.y);
         ctx.rotate(this.angle);
-        
-        // Dibujar el sprite de la bala
-        ctx.drawImage(bulletSprite, -this.size / 2, -this.size / 2, this.size, this.size);
 
-        // Puedes añadir también un borde violeta si lo deseas
+        // Dibujar el sprite escalado
+        ctx.drawImage(bulletSprite, -this.width / 2, -this.height / 2, this.width, this.height);
+
+        // Opcional: Añadir un borde violeta
         ctx.strokeStyle = 'violet';
         ctx.lineWidth = 2;
-        ctx.strokeRect(-this.size / 2, -this.size / 2, this.size, this.size);
+        ctx.strokeRect(-this.width / 2, -this.height / 2, this.width, this.height);
 
         ctx.restore();
     }
@@ -40,13 +54,21 @@ class Bullet {
     }
 }
 
+
+enemyBulletSprite.onload = () => {
+    enemyBulletWidth = enemyBulletSprite.width;
+    enemyBulletHeight = enemyBulletSprite.height;
+};
+
 class EnemyBullet {
     constructor(x, y, angle) {
         this.x = x;
         this.y = y;
-        this.size = 5;
-        this.speed = 7;  // La velocidad puede ser diferente de la bala del jugador
+        this.speed = 7;
         this.angle = angle;
+        this.scale = 3;  // Factor de escala para agrandar el tamaño de la bala del enemigo
+        this.width = enemyBulletSprite.width * this.scale;  // Ancho escalado del sprite
+        this.height = enemyBulletSprite.height * this.scale;  // Alto escalado del sprite
     }
 
     update() {
@@ -55,21 +77,22 @@ class EnemyBullet {
     }
 
     draw() {
-        ctx.fillStyle = 'red'; // Bala de enemigo en color rojo
-        ctx.beginPath();
-        ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
-        ctx.fill();
+        ctx.save();
+        ctx.translate(this.x, this.y);
+        ctx.rotate(this.angle);
 
-        // Borde violeta para la bala del enemigo
-        ctx.strokeStyle = 'violet';
-        ctx.lineWidth = 2;
-        ctx.stroke();
+        // Dibuja el sprite escalado de la bala del enemigo
+        ctx.drawImage(enemyBulletSprite, -this.width / 2, -this.height / 2, this.width, this.height);
+
+        ctx.restore();
     }
 
     outOfBounds() {
         return this.x < 0 || this.x > canvas.width || this.y < 0 || this.y > canvas.height;
     }
 }
+
+
 
 function updateBullets() {
     bullets.forEach((bullet, index) => {
@@ -94,11 +117,15 @@ function updateEnemyBullets() {
 function checkBulletEnemyCollisions() {
     bullets.forEach((bullet, bulletIndex) => {
         enemies.forEach((enemy, enemyIndex) => {
-            if (enemy.checkBulletCollision(bullet)) {
-                enemy.receiveDamage(10);  // Cambié el daño de las balas del jugador a 10
-                bullets.splice(bulletIndex, 1);  // Eliminar la bala después de colisionar
+            // Verificar colisión usando AABB
+            if (bullet.x < enemy.x + enemy.size &&
+                bullet.x + bullet.width > enemy.x &&
+                bullet.y < enemy.y + enemy.size &&
+                bullet.y + bullet.height > enemy.y) {
+                enemy.receiveDamage(10);
+                bullets.splice(bulletIndex, 1);
                 if (!enemy.active) {
-                    enemies.splice(enemyIndex, 1);  // Eliminar al enemigo si ha sido derrotado
+                    enemies.splice(enemyIndex, 1);
                     score += 50;
                 }
             }
@@ -108,17 +135,18 @@ function checkBulletEnemyCollisions() {
 
 function checkEnemyBulletPlayerCollisions() {
     enemyBullets.forEach((bullet, bulletIndex) => {
-        const distX = player.x - bullet.x;
-        const distY = player.y - bullet.y;
-        const distance = Math.sqrt(distX * distX + distY * distY);
-
-        if (distance < player.size + bullet.size) {
+        // Verificar colisión usando AABB
+        if (bullet.x < player.x + player.width &&
+            bullet.x + bullet.width > player.x &&
+            bullet.y < player.y + player.height &&
+            bullet.y + bullet.height > player.y) {
             player.health -= 20; // Daño al jugador
             if (player.health < 0) player.health = 0;
             enemyBullets.splice(bulletIndex, 1); // Eliminar la bala que impactó
         }
     });
 }
+
 
 window.addEventListener('keydown', (e) => {
     if (e.code === 'Space') {

@@ -3,8 +3,16 @@ let enemySpeed = 2;
 let spawnInterval = 900;
 let lastSpawnTime = 0;
 let bossActive = false; // Controla si el jefe está activo
+
 const meteoriteSprite = new Image();
 meteoriteSprite.src = '/sprites/meteorite.png';
+const kamikazeSprite = new Image();
+kamikazeSprite.src = '/sprites/kamikaze1.png';  // Ajusta la ruta del sprite
+const gunSprite = new Image();
+gunSprite.src = '/sprites/gun.png';  // Ajusta la ruta del sprite
+const bossSprite = new Image();
+bossSprite.src = '/sprites/boss.png';  // Ajusta la ruta del sprite
+
 
 class Enemy {
     constructor(x, y, health, damage, speed, color) {
@@ -54,26 +62,55 @@ class Enemy {
 class Kamikaze extends Enemy {
     constructor(x, y) {
         super(x, y, 1, 20, enemySpeed, 'red');
+
+        this.scale = 5;  // Ajuste de escala (puedes cambiar este valor)
+        this.width = kamikazeSprite.width * this.scale;
+        this.height = kamikazeSprite.height * this.scale;
     }
 
     update() {
-        const angle = Math.atan2(player.y - this.y, player.x - this.x);
-        this.x += this.speed * Math.cos(angle);
-        this.y += this.speed * Math.sin(angle);
+        // Calcular el ángulo hacia el jugador
+        this.angle = Math.atan2(player.y - this.y, player.x - this.x);
+        this.x += this.speed * Math.cos(this.angle);
+        this.y += this.speed * Math.sin(this.angle);
+    }
+
+    draw(ctx) {
+        ctx.save();
+        ctx.translate(this.x, this.y);
+        ctx.rotate(this.angle);  // Girar hacia el jugador
+
+        // Dibujar el sprite escalado
+        ctx.drawImage(kamikazeSprite, -this.width / 2, -this.height / 2, this.width, this.height);
+
+        // Dibujar la hitbox escalada alrededor del sprite
+        ctx.strokeStyle = 'violet';
+        ctx.lineWidth = 2;
+        ctx.strokeRect(-this.width / 2, -this.height / 2, this.width, this.height);
+
+        ctx.restore();
     }
 }
 
+
 class Gun extends Enemy {
     constructor(x, y) {
-        super(x, y, 1, 10, enemySpeed, 'blue');
+        super(x, y, 1, 10, enemySpeed, 'green');
         this.shootCooldown = 500;
         this.lastShotTime = 0;
+        this.scale = 5;  // Factor de escala (puedes ajustarlo)
+        this.width = gunSprite.width * this.scale;
+        this.height = gunSprite.height * this.scale;
+        this.angle = 0;  // Nueva propiedad para almacenar el ángulo
     }
 
     update() {
-        const angle = Math.atan2(player.y - this.y, player.x - this.x);
-        this.x += this.speed * Math.cos(angle);
-        this.y += this.speed * Math.sin(angle);
+        // Calcular el ángulo hacia el jugador
+        this.angle = Math.atan2(player.y - this.y, player.x - this.x);
+
+        // Actualizar la posición del enemigo
+        this.x += this.speed * Math.cos(this.angle);
+        this.y += this.speed * Math.sin(this.angle);
 
         const currentTime = Date.now();
         if (currentTime - this.lastShotTime >= this.shootCooldown) {
@@ -83,8 +120,24 @@ class Gun extends Enemy {
     }
 
     shoot() {
-        const enemyBullet = new EnemyBullet(this.x, this.y, Math.atan2(player.y - this.y, player.x - this.x));
+        const enemyBullet = new EnemyBullet(this.x, this.y, this.angle);  // Usamos el mismo ángulo para disparar
         enemyBullets.push(enemyBullet);
+    }
+
+    draw(ctx) {
+        ctx.save();
+        ctx.translate(this.x, this.y);  // Mover el contexto a la posición del enemigo
+        ctx.rotate(this.angle);  // Girar el contexto en el ángulo calculado
+
+        // Dibuja el sprite del enemigo Gun girado y escalado
+        ctx.drawImage(gunSprite, -this.width / 2, -this.height / 2, this.width, this.height);
+
+        // Dibujar la hitbox escalada alrededor del sprite
+        ctx.strokeStyle = 'violet';
+        ctx.lineWidth = 2;
+        ctx.strokeRect(-this.width / 2, -this.height / 2, this.width, this.height);
+
+        ctx.restore();
     }
 }
 
@@ -104,7 +157,9 @@ class Meteorite extends Enemy {
         super(x, y, 1, 50, enemySpeed, 'gray');
         this.speedX = speedX;
         this.speedY = speedY;
-        this.size = 50;  // Tamaño del meteorito (ajusta según el sprite)
+        this.scale = 1;  // Factor de escala para el meteorito
+        this.width = meteoriteSprite.width * this.scale;
+        this.height = meteoriteSprite.height * this.scale;
     }
 
     update() {
@@ -116,41 +171,44 @@ class Meteorite extends Enemy {
         ctx.save();
         ctx.translate(this.x, this.y);
         
-        // Dibujar el sprite del meteorito
-        ctx.drawImage(meteoriteSprite, -this.size / 2, -this.size / 2, this.size, this.size);
+        // Dibujar el sprite del meteorito escalado
+        ctx.drawImage(meteoriteSprite, -this.width / 2, -this.height / 2, this.width, this.height);
 
-        // Si quieres, puedes mantener el borde violeta
+        // Dibujar la hitbox escalada alrededor del sprite
         ctx.strokeStyle = 'violet';
         ctx.lineWidth = 3;
-        ctx.strokeRect(-this.size / 2, -this.size / 2, this.size, this.size);
+        ctx.strokeRect(-this.width / 2, -this.height / 2, this.width, this.height);
 
         ctx.restore();
     }
 }
 
 
+
 class Boss extends Enemy {
     constructor() {
-        super(canvas.width / 2, -50, 50, 30, 3, 'purple'); // Vida del Boss = 50
+        super(canvas.width / 2, -50, 50, 30, 3, 'purple');  // Vida del Boss = 50
         this.phase = 1;
         this.shootCooldown = 400;  // Cooldown inicial de los disparos
         this.lastShotTime = 0;
+        this.scale = 4;  // Factor de escala para el Boss (ajustable)
+        this.width = bossSprite.width * this.scale;
+        this.height = bossSprite.height * this.scale;
+        this.angle = 0;  // Nueva propiedad para almacenar el ángulo
     }
 
     update() {
         const currentTime = Date.now();
+        this.angle = Math.atan2(player.y - this.y, player.x - this.x);  // Calcular el ángulo hacia el jugador
 
         if (this.phase === 1) {
-            // Fase 1: Movimiento hacia el jugador
-            const angle = Math.atan2(player.y - this.y, player.x - this.x);
-            this.x += this.speed * Math.cos(angle);
-            this.y += this.speed * Math.sin(angle);
+            this.x += this.speed * Math.cos(this.angle);
+            this.y += this.speed * Math.sin(this.angle);
 
             if (this.health <= 30) {
                 this.phase = 2;
             }
         } else if (this.phase === 2) {
-            // Fase 2: Disparos aleatorios con velocidad normal de movimiento
             if (currentTime - this.lastShotTime >= this.shootCooldown) {
                 this.shootRandomBullets();
                 this.lastShotTime = currentTime;
@@ -162,12 +220,9 @@ class Boss extends Enemy {
                 this.shootCooldown = 300;  // Disparar más rápido en la fase 3
             }
         } else if (this.phase === 3) {
-            // Fase 3: Movimiento lento y disparos rápidos
-            const angle = Math.atan2(player.y - this.y, player.x - this.x);
-            this.x += this.speed * Math.cos(angle);
-            this.y += this.speed * Math.sin(angle);
+            this.x += this.speed * Math.cos(this.angle);
+            this.y += this.speed * Math.sin(this.angle);
 
-            // Disparar más rápido en la fase 3
             if (currentTime - this.lastShotTime >= this.shootCooldown / 2) {
                 this.shootRandomBullets();
                 this.lastShotTime = currentTime;
@@ -177,7 +232,7 @@ class Boss extends Enemy {
 
     // Método para disparar balas en direcciones aleatorias
     shootRandomBullets() {
-        const numBullets = 5; // Número de balas disparadas en cada ráfaga
+        const numBullets = 5;
         for (let i = 0; i < numBullets; i++) {
             const randomAngle = Math.random() * Math.PI * 2; // Ángulo aleatorio entre 0 y 2π
             const bossBullet = new EnemyBullet(this.x, this.y, randomAngle);
@@ -192,7 +247,25 @@ class Boss extends Enemy {
             bossActive = false; // Si el jefe muere, permitir que otros enemigos aparezcan
         }
     }
+
+    draw(ctx) {
+        ctx.save();
+        ctx.translate(this.x, this.y);
+        ctx.rotate(this.angle);  // Girar el Boss hacia el jugador
+
+        // Dibujar el sprite del Boss escalado
+        ctx.drawImage(bossSprite, -this.width / 2, -this.height / 2, this.width, this.height);
+
+        // Dibujar la hitbox escalada alrededor del sprite
+        ctx.strokeStyle = 'violet';
+        ctx.lineWidth = 3;
+        ctx.strokeRect(-this.width / 2, -this.height / 2, this.width, this.height);
+
+        ctx.restore();
+    }
 }
+
+
 
 function checkEnemyCollisions() {
     for (let i = 0; i < enemies.length; i++) {
