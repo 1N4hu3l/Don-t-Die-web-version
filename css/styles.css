@@ -17,7 +17,7 @@ body {
     color: white;
     font-family: 'MyCustomFont', sans-serif;
     overflow: hidden;
-    position: relative; /* Asegura que los elementos posicionados se ajusten al body */
+    position: relative; /*elementos se ajusten al body */
 }
 
 canvas {
