@@ -96,7 +96,7 @@ class Kamikaze extends Enemy {
 class Gun extends Enemy {
     constructor(x, y) {
         super(x, y, 1, 10, enemySpeed, 'green');
-        this.shootCooldown = 500;
+        this.shootCooldown = 650;
         this.lastShotTime = 0;
         this.scale = 5;  // Factor de escala (puedes ajustarlo)
         this.width = gunSprite.width * this.scale;
