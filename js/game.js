@@ -119,8 +119,8 @@ const player = {
     height: 0,
     speed: 6,
     angle: 0,
-    health: 200,
-    maxHealth: 200
+    health: 20000,
+    maxHealth: 20000
 };
 
 // Esperar a que cargue el sprite del jugador
